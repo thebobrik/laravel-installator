@@ -1,19 +1,13 @@
 #! /bin/bash
 
 # Set timezone
-echo "Europe/Kiev" | sudo tee /etc/timezone
+echo "Europe/Berlin" | sudo tee /etc/timezone
 sudo dpkg-reconfigure --frontend noninteractive tzdata
 
-sudo apt-get update
+sudo apt-get -y update
+sudo apt-get -y upgrade
 
 sudo locale-gen ru_RU.UTF-8
-
-sudo cp /vagrant/shell/conf/.gitconfig  /home/vagrant/
-sudo cp /vagrant/shell/conf/.profile    /home/vagrant/
-sudo cp /vagrant/shell/conf/.selected_editor    /home/vagrant/
-sudo chmod 644 /home/vagrant/.gitconfig
-sudo chmod 644 /home/vagrant/.profile
-sudo chmod 644 /home/vagrant/.selected_editor
 
 #install mysql server
 if [ ! -f /var/log/mysql.setup ];
@@ -41,7 +35,8 @@ fi
 #install php
 if [ ! -f /var/log/php.install ];
 then
-sudo apt-get install -y php5 libapache2-mod-php5 php5-cli php5-mysql php5-curl php5-gd php5-mcrypt php-pear  php5-xdebug
+sudo apt-get install -y php5 libapache2-mod-php5 php5-cli php5-mysql php5-curl php5-gd php5-mcrypt php-pear php5-xdebug
+sudo php5enmod mcrypt
 sudo touch /var/log/php.install
 fi
 
@@ -67,13 +62,6 @@ sudo apt-get install -y phpmyadmin
 sudo touch /var/log/phpmyadmin.install
 fi
 
-#install Mailcather
-if [ ! -f /var/log/mailcather.install ];
-then
-sudo apt-get install -y build-essential libsqlite3-dev ruby1.9.3
-sudo gem install mailcatcher
-sudo touch /var/log/mailcather.install
-fi
 
 #Install Composer
 if [ ! -f /var/log/composer.install ];
@@ -88,9 +76,6 @@ fi
 # Configure PHP
 if [ ! -f /var/log/php.setup ];
 then
-    # Configure sendmail path to mailcathcer
-    sudo sed -i '/;sendmail_path =/c sendmail_path = "/usr/local/bin/catchmail -f local@dev"' /etc/php5/apache2/php.ini
-    sudo sed -i '/;sendmail_path =/c sendmail_path = "/usr/local/bin/catchmail -f local@dev"' /etc/php5/cli/php.ini
     # Display  Errors
     sudo sed -i '/display_errors = Off/c display_errors = On' /etc/php5/apache2/php.ini
     sudo sed -i '/display_errors = Off/c display_errors = On' /etc/php5/cli/php.ini
@@ -129,8 +114,6 @@ fi
 #restart apache2
 sudo service apache2 restart
 
-#ran Mailcather
-mailcatcher --http-ip=10.10.10.10
 
 
 
