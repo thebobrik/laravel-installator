@@ -66,6 +66,7 @@ fi
 if [ ! -f /var/log/mysql.setup ];
 then
     # Allow root access from any host
+    sudo sed -i "s/bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/" /etc/mysql/my.cnf
     echo "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION" | mysql -u root --password=root
     echo "GRANT PROXY ON ''@'' TO 'root'@'%' WITH GRANT OPTION" | mysql -u root --password=root
     sudo touch /var/log/mysql.setup
