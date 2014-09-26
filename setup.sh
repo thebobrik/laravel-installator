@@ -143,17 +143,16 @@ fi
 #setup laravel
 if [ ! -f /var/log/laravel.setup ];
 then
-    sudo rm -rf /var/www/*
-    sudo sed -i 's/\'database\'  => \'forge\'/\'database\'  => \'database\'/' /var/www/public/app/config/database.php
-    sudo sed -i 's/\'username\'  => \'forge\'/\'username\'  => \'root\'/' /var/www/public/app/config/database.php
-    sudo sed -i 's/\'password\'  => \'\'/\'password\'  => \'root\'/' /var/www/public/app/config/database.php
+    sudo sed -i "s/'database'  => 'forge'/'database'  => 'database'/g" /var/www/app/config/database.php
+    sudo sed -i "s/'username'  => 'forge'/'username'  => 'root'/g" /var/www/app/config/database.php
+    sudo sed -i "s/'password'  => ''/'password' => 'root'/g" /var/www/app/config/database.php
     sudo touch /var/log/laravel.setup
 fi
 
 #install ngrok
 if [ ! -f /var/log/ngrok.install ];
 then
-    #sudo apt-get install ngrok-client
+    sudo apt-get install ngrok-client
     sudo touch /var/log/ngrok.install
 fi
 
