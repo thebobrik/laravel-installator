@@ -4,6 +4,13 @@
 echo "Europe/Berlin" | sudo tee /etc/timezone
 sudo dpkg-reconfigure --frontend noninteractive tzdata
 
+# console setup
+echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8, ru_RU.UTF-8 UTF-8" | debconf-set-selections
+echo "locales locales/default_environment_locale select ru_RU.UTF-8" | debconf-set-selections
+sed -i 's/^# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen
+dpkg-reconfigure --frontend=noninteractive locales
+export LANG=ru_RU.UTF-8
+
 sudo apt-get -y update
 sudo apt-get -y upgrade
 
@@ -62,7 +69,7 @@ sudo apt-get install -y phpmyadmin
 sudo touch /var/log/phpmyadmin.install
 fi
 
-#install mysql server
+#Configure mysql server
 if [ ! -f /var/log/mysql.setup ];
 then
     # Allow root access from any host
@@ -125,28 +132,41 @@ then
     # If you want to install a different path to the web directory. For example:
     #sudo sed -i 's/DocumentRoot \/var\/www/DocumentRoot \/mnt\/var\/www\/html/g' /etc/apache2/sites-available/default
     #sudo sed -i 's/<Directory \/var\/www\/>/<Directory \/mnt\/var\/www\/html\/>/' /etc/apache2/sites-available/default
-    sudo sed -i 's/DocumentRoot \/var\/www\/html/DocumentRoot \/var\/www\/public/g' /etc/apache2/sites-available/default
-    sudo sed -i 's/<Directory \/var\/www\/html/>/<Directory \/var\/www\/public\/>/' /etc/apache2/sites-available/default
+    sudo sed -i 's/DocumentRoot \/var\/www\/html/DocumentRoot \/var\/www\/public/g' /etc/apache2/sites-available/000-default.conf
+    sudo sed -i 's/DocumentRoot \/var\/www\/html/DocumentRoot \/var\/www\/public/g' /etc/apache2/sites-available/default-ssl.conf
+    #sudo sed -i 's/<Directory \/var\/www\/>/<Directory \/var\/www\/public\/>/' /etc/apache2/apache2.conf
+    #sudo sed -i 's/<Directory \/var\/www\/html/>/<Directory \/var\/www\/public\/>/' /etc/apache2/sites-available/default
     sudo touch /var/log/apache2.setup
+fi
+
+#install laravel
+if [ ! -f /var/log/laravel.install ];
+then
+    sudo rm -rf /var/www/*
+    sudo composer create-project laravel/laravel --prefer-dist /var/www
+    sudo touch /var/log/laravel.install
+fi
+
+#setup laravel
+if [ ! -f /var/log/laravel.setup ];
+then
+    sudo rm -rf /var/www/*
+    sudo sed -i 's/\'database\'  => \'forge\'/\'database\'  => \'database\'/' /var/www/public/app/config/database.php
+    sudo sed -i 's/\'username\'  => \'forge\'/\'username\'  => \'root\'/' /var/www/public/app/config/database.php
+    sudo sed -i 's/\'password\'  => \'\'/\'password\'  => \'root\'/' /var/www/public/app/config/database.php
+    sudo touch /var/log/laravel.setup
+fi
+
+#install ngrok
+if [ ! -f /var/log/ngrok.install ];
+then
+    #sudo apt-get install ngrok-client
+    sudo touch /var/log/ngrok.install
 fi
 
 #restart apache2 mysql
 sudo service apache2 restart
 sudo service mysql restart
-
-#install laravel
-
-if [ ! -f /var/log/laravel.install ];
-then
-    rm -rf /www/var/*
-    sudo composer create-project laravel/laravel --prefer-dist /www/var
-    sudo touch /var/log/laravel.install
-fi
-
-
-
-
-
 
 
 

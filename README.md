@@ -1,4 +1,4 @@
-#Simplest LAMP stack#
+#Laravel#
 
 
 * php 5.5
@@ -6,5 +6,5 @@
 * apache2
 * phpmyadmin
 * composer
-* mailcatcher
+* Laravel
 * git
