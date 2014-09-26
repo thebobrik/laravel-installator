@@ -62,13 +62,22 @@ sudo apt-get install -y phpmyadmin
 sudo touch /var/log/phpmyadmin.install
 fi
 
+#install mysql server
+if [ ! -f /var/log/mysql.setup ];
+then
+    # Allow root access from any host
+    echo "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION" | mysql -u root --password=root
+    echo "GRANT PROXY ON ''@'' TO 'root'@'%' WITH GRANT OPTION" | mysql -u root --password=root
+    sudo touch /var/log/mysql.setup
+fi
+
 
 #Install Composer
 if [ ! -f /var/log/composer.install ];
 then
-sudo curl -sS https://getcomposer.org/installer | php
-sudo mv composer.phar /usr/local/bin/composer
-sudo touch /var/log/composer.install
+    sudo curl -sS https://getcomposer.org/installer | php
+    sudo mv composer.phar /usr/local/bin/composer
+    sudo touch /var/log/composer.install
 fi
 
 #CONFIGURATION
@@ -76,7 +85,15 @@ fi
 # Configure PHP
 if [ ! -f /var/log/php.setup ];
 then
-    # Display  Errors
+    # Set timezone
+    sudo sed -i "s/;date.timezone =/date.timezone = Europe\/Berlin/" /etc/php5/apache2/php.ini
+    sudo sed -i "s/;date.timezone =/date.timezone = Europe\/Berlin/" /etc/php5/cli/php.ini
+
+    # Enable short tag
+    sudo sed -i "s/short_open_tag = On/short_open_tag = Off/" /etc/php5/apache2/php.ini
+    sudo sed -i "s/short_open_tag = On/short_open_tag = Off/" /etc/php5/cli/php.ini
+
+    # Display Errors
     sudo sed -i '/display_errors = Off/c display_errors = On' /etc/php5/apache2/php.ini
     sudo sed -i '/display_errors = Off/c display_errors = On' /etc/php5/cli/php.ini
     sudo sed -i '/error_reporting = E_ALL & ~E_DEPRECATED/c error_reporting = E_ALL | E_STRICT' /etc/php5/apache2/php.ini
@@ -108,11 +125,23 @@ then
     # If you want to install a different path to the web directory. For example:
     #sudo sed -i 's/DocumentRoot \/var\/www/DocumentRoot \/mnt\/var\/www\/html/g' /etc/apache2/sites-available/default
     #sudo sed -i 's/<Directory \/var\/www\/>/<Directory \/mnt\/var\/www\/html\/>/' /etc/apache2/sites-available/default
+    sudo sed -i 's/DocumentRoot \/var\/www\/html/DocumentRoot \/var\/www\/public/g' /etc/apache2/sites-available/default
+    sudo sed -i 's/<Directory \/var\/www\/html/>/<Directory \/var\/www\/public\/>/' /etc/apache2/sites-available/default
     sudo touch /var/log/apache2.setup
 fi
 
-#restart apache2
+#restart apache2 mysql
 sudo service apache2 restart
+sudo service mysql restart
+
+#install laravel
+
+if [ ! -f /var/log/laravel.install ];
+then
+    rm -rf /www/var/*
+    sudo composer create-project laravel/laravel --prefer-dist /www/var
+    sudo touch /var/log/laravel.install
+fi
 
 
 
